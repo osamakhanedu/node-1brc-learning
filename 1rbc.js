@@ -19,7 +19,6 @@ for await (const line of linestream) {
         existing.max = Math.max(existing.max, temperature);
         existing.sum += temperature;
         existing.count++;
-        existing.avg = existing.sum / existing.count;
     } else {
         aggregations.set(stationName, {
             min: temperature,
@@ -37,15 +36,22 @@ function printCompiledResults(aggregations) {
     const sortedStations = Array.from(aggregations.keys()).sort();
 
     let result =
-        "{" +
+        '{' +
         sortedStations
-            .map((stationName) => {
-                const { min, max, sum, count, avg } =
-                    aggregations.get(stationName);
-                return `${stationName}: min=${min}, max=${max}, avg=${avg.toFixed(1)}`;
+            .map((station) => {
+                const data = aggregations.get(station);
+                return `${station}=${round(data.min / 10)}/${round(
+                    data.sum / 10 / data.count
+                )}/${round(data.max / 10)}`;
             })
-            .join(", ") +
-        "}";
+            .join(', ') +
+        '}';
 
     console.log(result);
+}
+
+function round(num) {
+    const fixed = Math.round(10 * num) / 10;
+
+    return fixed.toFixed(1);
 }
